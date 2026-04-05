@@ -1,0 +1,74 @@
+package cwchoiit.gibungab.application.expense;
+
+import cwchoiit.gibungab.application.port.out.CategoryRepository;
+import cwchoiit.gibungab.application.port.out.ExpenseRepository;
+import cwchoiit.gibungab.domain.expense.Emotion;
+import cwchoiit.gibungab.domain.expense.Expense;
+import cwchoiit.gibungab.infrastructure.common.exception.BusinessException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class ExpenseService {
+
+    private final ExpenseRepository expenseRepository;
+    private final CategoryRepository categoryRepository;
+
+    @Transactional
+    public Expense create(Long memberId, Long categoryId, BigDecimal amount, String description,
+                          String merchant, LocalDate expenseDate,
+                          int satisfactionScore, String emotionMemo) {
+        validateCategory(memberId, categoryId);
+        Emotion emotion = Emotion.of(satisfactionScore, emotionMemo);
+        Expense expense = Expense.of(memberId, categoryId, amount, description, merchant, expenseDate, emotion);
+        return expenseRepository.save(expense);
+    }
+
+    public Page<Expense> getExpenses(Long memberId, LocalDate from, LocalDate to,
+                                     Long categoryId, Integer minScore, Integer maxScore,
+                                     Pageable pageable) {
+        return expenseRepository.findByMemberIdAndFilters(memberId, from, to, categoryId, minScore, maxScore, pageable);
+    }
+
+    public Expense getExpense(Long memberId, Long expenseId) {
+        Expense expense = expenseRepository.findByIdAndDeletedAtIsNull(expenseId)
+                .orElseThrow(() -> BusinessException.notFound("지출 내역을 찾을 수 없습니다."));
+
+        if (!expense.isOwnedBy(memberId)) {
+            throw BusinessException.forbidden("해당 지출 내역에 접근할 권한이 없습니다.");
+        }
+        return expense;
+    }
+
+    @Transactional
+    public Expense update(Long memberId, Long expenseId, Long categoryId, BigDecimal amount,
+                          String description, String merchant, LocalDate expenseDate,
+                          int satisfactionScore, String emotionMemo) {
+        Expense expense = getExpense(memberId, expenseId);
+        validateCategory(memberId, categoryId);
+
+        expense.updateDetails(categoryId, amount, description, merchant, expenseDate);
+        expense.changeEmotion(satisfactionScore, emotionMemo);
+        return expense;
+    }
+
+    @Transactional
+    public void delete(Long memberId, Long expenseId) {
+        Expense expense = getExpense(memberId, expenseId);
+        expense.softDelete();
+    }
+
+    private void validateCategory(Long memberId, Long categoryId) {
+        categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+                .filter(c -> !c.isCustom() || c.isOwnedBy(memberId))
+                .orElseThrow(() -> BusinessException.badRequest("유효하지 않은 카테고리입니다."));
+    }
+}
