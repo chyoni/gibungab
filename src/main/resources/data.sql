@@ -1,0 +1,9 @@
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '식비', '🍽️', 1, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '카페/간식', '☕', 2, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '교통', '🚌', 3, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '쇼핑', '🛍️', 4, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '문화/여가', '🎬', 5, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '의료/건강', '💊', 6, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '주거/통신', '🏠', 7, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '교육', '📚', 8, NOW(), NOW(), NULL);
+INSERT INTO categories (member_id, name, icon, sort_order, created_at, updated_at, deleted_at) VALUES (NULL, '기타', '📦', 9, NOW(), NOW(), NULL);
