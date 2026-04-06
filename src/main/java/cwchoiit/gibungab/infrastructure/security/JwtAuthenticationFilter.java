@@ -1,5 +1,6 @@
 package cwchoiit.gibungab.infrastructure.security;
 
+import cwchoiit.gibungab.application.port.out.TokenProviderPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,14 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProviderPort tokenProvider;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
-        if (token != null && jwtTokenProvider.validate(token)) {
-            Long memberId = jwtTokenProvider.getMemberId(token);
+        if (token != null && tokenProvider.validate(token)) {
+            Long memberId = tokenProvider.getMemberId(token);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(memberId, null, List.of());
             SecurityContextHolder.getContext().setAuthentication(authentication);

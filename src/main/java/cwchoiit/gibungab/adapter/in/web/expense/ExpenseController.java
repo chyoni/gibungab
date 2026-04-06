@@ -1,12 +1,11 @@
 package cwchoiit.gibungab.adapter.in.web.expense;
 
-import cwchoiit.gibungab.application.expense.ExpenseService;
-import cwchoiit.gibungab.domain.expense.Expense;
-import cwchoiit.gibungab.infrastructure.common.ApiResponse;
+import cwchoiit.gibungab.adapter.in.web.common.ApiResponse;
+import cwchoiit.gibungab.application.port.in.ExpenseUseCase;
+import cwchoiit.gibungab.application.port.out.PageQuery;
+import cwchoiit.gibungab.application.port.out.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +19,21 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ExpenseController {
 
-    private final ExpenseService expenseService;
+    private final ExpenseUseCase expenseUseCase;
 
     @PostMapping
     public ResponseEntity<ApiResponse<ExpenseResponse>> create(
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody ExpenseRequest request) {
-        Expense expense = expenseService.create(
+        ExpenseResponse response = ExpenseResponse.from(expenseUseCase.create(
                 memberId, request.categoryId(), request.amount(), request.description(),
                 request.merchant(), request.expenseDate(),
-                request.satisfactionScore(), request.emotionMemo());
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(ExpenseResponse.from(expense)));
+                request.satisfactionScore(), request.emotionMemo()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(response));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getExpenses(
+    public ResponseEntity<ApiResponse<PageResult<ExpenseResponse>>> getExpenses(
             @AuthenticationPrincipal Long memberId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
@@ -43,8 +42,8 @@ public class ExpenseController {
             @RequestParam(required = false) Integer maxScore,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<ExpenseResponse> expenses = expenseService
-                .getExpenses(memberId, from, to, categoryId, minScore, maxScore, PageRequest.of(page, size))
+        PageResult<ExpenseResponse> expenses = expenseUseCase
+                .getExpenses(memberId, from, to, categoryId, minScore, maxScore, new PageQuery(page, size))
                 .map(ExpenseResponse::from);
         return ResponseEntity.ok(ApiResponse.ok(expenses));
     }
@@ -53,7 +52,7 @@ public class ExpenseController {
     public ResponseEntity<ApiResponse<ExpenseResponse>> getExpense(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long expenseId) {
-        ExpenseResponse response = ExpenseResponse.from(expenseService.getExpense(memberId, expenseId));
+        ExpenseResponse response = ExpenseResponse.from(expenseUseCase.getExpense(memberId, expenseId));
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -62,18 +61,18 @@ public class ExpenseController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long expenseId,
             @Valid @RequestBody ExpenseRequest request) {
-        Expense expense = expenseService.update(
+        ExpenseResponse response = ExpenseResponse.from(expenseUseCase.update(
                 memberId, expenseId, request.categoryId(), request.amount(), request.description(),
                 request.merchant(), request.expenseDate(),
-                request.satisfactionScore(), request.emotionMemo());
-        return ResponseEntity.ok(ApiResponse.ok(ExpenseResponse.from(expense)));
+                request.satisfactionScore(), request.emotionMemo()));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @DeleteMapping("/{expenseId}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long expenseId) {
-        expenseService.delete(memberId, expenseId);
+        expenseUseCase.delete(memberId, expenseId);
         return ResponseEntity.ok(ApiResponse.noContent());
     }
 }
