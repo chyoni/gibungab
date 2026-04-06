@@ -1,6 +1,6 @@
 package cwchoiit.gibungab.adapter.out.persistence;
 
-import cwchoiit.gibungab.application.port.out.MemberPort;
+import cwchoiit.gibungab.application.port.out.MemberRepository;
 import cwchoiit.gibungab.domain.member.Member;
 import cwchoiit.gibungab.domain.member.SocialProvider;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class MemberPersistenceAdapter implements MemberPort {
+public class MemberPersistenceAdapter implements MemberRepository {
 
     private final MemberJpaRepository jpaRepository;
 

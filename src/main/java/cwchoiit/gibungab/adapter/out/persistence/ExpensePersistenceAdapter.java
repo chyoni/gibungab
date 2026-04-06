@@ -1,6 +1,6 @@
 package cwchoiit.gibungab.adapter.out.persistence;
 
-import cwchoiit.gibungab.application.port.out.ExpensePort;
+import cwchoiit.gibungab.application.port.out.ExpenseRepository;
 import cwchoiit.gibungab.application.port.out.PageQuery;
 import cwchoiit.gibungab.application.port.out.PageResult;
 import cwchoiit.gibungab.application.stats.CategorySummaryStat;
@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class ExpensePersistenceAdapter implements ExpensePort {
+public class ExpensePersistenceAdapter implements ExpenseRepository {
 
     private final ExpenseJpaRepository jpaRepository;
 

@@ -5,7 +5,7 @@ import cwchoiit.gibungab.domain.category.Category;
 import java.util.List;
 import java.util.Optional;
 
-public interface CategoryPort {
+public interface CategoryRepository {
 
     List<Category> findAllAvailableByMemberId(Long memberId);
 

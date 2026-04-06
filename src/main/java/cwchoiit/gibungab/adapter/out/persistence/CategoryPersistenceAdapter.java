@@ -1,6 +1,6 @@
 package cwchoiit.gibungab.adapter.out.persistence;
 
-import cwchoiit.gibungab.application.port.out.CategoryPort;
+import cwchoiit.gibungab.application.port.out.CategoryRepository;
 import cwchoiit.gibungab.domain.category.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class CategoryPersistenceAdapter implements CategoryPort {
+public class CategoryPersistenceAdapter implements CategoryRepository {
 
     private final CategoryJpaRepository jpaRepository;
 

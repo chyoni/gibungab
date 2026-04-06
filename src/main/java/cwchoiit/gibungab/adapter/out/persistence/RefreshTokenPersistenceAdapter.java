@@ -1,6 +1,6 @@
 package cwchoiit.gibungab.adapter.out.persistence;
 
-import cwchoiit.gibungab.application.port.out.RefreshTokenPort;
+import cwchoiit.gibungab.application.port.out.RefreshTokenRepository;
 import cwchoiit.gibungab.domain.auth.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class RefreshTokenPersistenceAdapter implements RefreshTokenPort {
+public class RefreshTokenPersistenceAdapter implements RefreshTokenRepository {
 
     private final RefreshTokenJpaRepository jpaRepository;
 

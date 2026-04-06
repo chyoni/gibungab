@@ -2,7 +2,7 @@ package cwchoiit.gibungab.application.category;
 
 import cwchoiit.gibungab.application.exception.BusinessException;
 import cwchoiit.gibungab.application.port.in.CategoryUseCase;
-import cwchoiit.gibungab.application.port.out.CategoryPort;
+import cwchoiit.gibungab.application.port.out.CategoryRepository;
 import cwchoiit.gibungab.domain.category.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,26 +15,26 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CategoryService implements CategoryUseCase {
 
-    private final CategoryPort categoryPort;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<Category> getAvailableCategories(Long memberId) {
-        return categoryPort.findAllAvailableByMemberId(memberId);
+        return categoryRepository.findAllAvailableByMemberId(memberId);
     }
 
     @Override
     @Transactional
     public Category createCustomCategory(Long memberId, String name, String icon) {
-        if (categoryPort.existsByMemberIdAndNameAndNotDeleted(memberId, name)) {
+        if (categoryRepository.existsByMemberIdAndNameAndNotDeleted(memberId, name)) {
             throw BusinessException.badRequest("이미 동일한 이름의 카테고리가 존재합니다.");
         }
-        return categoryPort.save(Category.ofCustom(memberId, name, icon));
+        return categoryRepository.save(Category.ofCustom(memberId, name, icon));
     }
 
     @Override
     @Transactional
     public Category updateCategory(Long memberId, Long categoryId, String name, String icon) {
-        Category category = categoryPort.findByIdAndNotDeleted(categoryId)
+        Category category = categoryRepository.findByIdAndNotDeleted(categoryId)
                 .orElseThrow(() -> BusinessException.notFound("카테고리를 찾을 수 없습니다."));
 
         if (!category.isCustom() || !category.isOwnedBy(memberId)) {
@@ -48,7 +48,7 @@ public class CategoryService implements CategoryUseCase {
     @Override
     @Transactional
     public void deleteCategory(Long memberId, Long categoryId) {
-        Category category = categoryPort.findByIdAndNotDeleted(categoryId)
+        Category category = categoryRepository.findByIdAndNotDeleted(categoryId)
                 .orElseThrow(() -> BusinessException.notFound("카테고리를 찾을 수 없습니다."));
 
         if (!category.isCustom() || !category.isOwnedBy(memberId)) {
