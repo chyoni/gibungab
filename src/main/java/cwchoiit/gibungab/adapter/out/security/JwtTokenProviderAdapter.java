@@ -1,47 +1,47 @@
-package cwchoiit.gibungab.infrastructure.security;
+package cwchoiit.gibungab.adapter.out.security;
 
+import cwchoiit.gibungab.application.port.out.TokenProviderPort;
+import cwchoiit.gibungab.infrastructure.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProviderAdapter implements TokenProviderPort {
 
     private final SecretKey secretKey;
     private final long accessTokenExpiryMs;
     private final long refreshTokenExpiryMs;
 
-    public JwtTokenProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-expiry-ms}") long accessTokenExpiryMs,
-            @Value("${jwt.refresh-token-expiry-ms}") long refreshTokenExpiryMs
-    ) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenExpiryMs = accessTokenExpiryMs;
-        this.refreshTokenExpiryMs = refreshTokenExpiryMs;
+    public JwtTokenProviderAdapter(JwtProperties properties) {
+        this.secretKey = Keys.hmacShaKeyFor(properties.secret().getBytes(StandardCharsets.UTF_8));
+        this.accessTokenExpiryMs = properties.accessTokenExpiryMs();
+        this.refreshTokenExpiryMs = properties.refreshTokenExpiryMs();
     }
 
+    @Override
     public String createAccessToken(Long memberId) {
         return createToken(memberId, accessTokenExpiryMs);
     }
 
+    @Override
     public String createRefreshToken(Long memberId) {
         return createToken(memberId, refreshTokenExpiryMs);
     }
 
+    @Override
     public Long getMemberId(String token) {
         return parseClaims(token).get("memberId", Long.class);
     }
 
+    @Override
     public boolean validate(String token) {
         try {
             parseClaims(token);
@@ -51,6 +51,7 @@ public class JwtTokenProvider {
         }
     }
 
+    @Override
     public LocalDateTime getRefreshTokenExpiry() {
         return LocalDateTime.now().plusSeconds(refreshTokenExpiryMs / 1000);
     }

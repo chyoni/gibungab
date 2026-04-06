@@ -1,10 +1,10 @@
-package cwchoiit.gibungab.infrastructure.oauth;
+package cwchoiit.gibungab.adapter.out.oauth;
 
-import cwchoiit.gibungab.application.auth.OAuthClient;
 import cwchoiit.gibungab.application.auth.OAuthUserInfo;
-import cwchoiit.gibungab.infrastructure.common.exception.BusinessException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import cwchoiit.gibungab.application.exception.BusinessException;
+import cwchoiit.gibungab.application.exception.ErrorCode;
+import cwchoiit.gibungab.application.port.out.OAuthPort;
+import cwchoiit.gibungab.infrastructure.properties.KakaoOAuthProperties;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,7 +14,7 @@ import org.springframework.web.client.RestClient;
 import java.util.Map;
 
 @Component("kakaoOAuthClient")
-public class KakaoOAuthClient implements OAuthClient {
+public class KakaoOAuthAdapter implements OAuthPort {
 
     private static final String TOKEN_URI = "https://kauth.kakao.com/oauth/token";
     private static final String USER_INFO_URI = "https://kapi.kakao.com/v2/user/me";
@@ -23,12 +23,9 @@ public class KakaoOAuthClient implements OAuthClient {
     private final String redirectUri;
     private final RestClient restClient;
 
-    public KakaoOAuthClient(
-            @Value("${oauth2.kakao.client-id}") String clientId,
-            @Value("${oauth2.kakao.redirect-uri}") String redirectUri
-    ) {
-        this.clientId = clientId;
-        this.redirectUri = redirectUri;
+    public KakaoOAuthAdapter(KakaoOAuthProperties properties) {
+        this.clientId = properties.clientId();
+        this.redirectUri = properties.redirectUri();
         this.restClient = RestClient.create();
     }
 
@@ -52,7 +49,7 @@ public class KakaoOAuthClient implements OAuthClient {
                 .body(params)
                 .retrieve()
                 .onStatus(status -> status.isError(),
-                        (req, res) -> { throw BusinessException.badRequest("카카오 토큰 교환에 실패했습니다."); })
+                        (req, res) -> { throw BusinessException.of(ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED, "카카오 토큰 교환에 실패했습니다."); })
                 .body(Map.class);
 
         return (String) response.get("access_token");
@@ -65,7 +62,7 @@ public class KakaoOAuthClient implements OAuthClient {
                 .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .onStatus(status -> status.isError(),
-                        (req, res) -> { throw BusinessException.badRequest("카카오 사용자 정보 조회에 실패했습니다."); })
+                        (req, res) -> { throw BusinessException.of(ErrorCode.OAUTH_USER_INFO_FAILED, "카카오 사용자 정보 조회에 실패했습니다."); })
                 .body(Map.class);
 
         String socialId = String.valueOf(response.get("id"));

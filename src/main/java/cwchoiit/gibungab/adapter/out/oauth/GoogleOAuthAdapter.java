@@ -1,9 +1,10 @@
-package cwchoiit.gibungab.infrastructure.oauth;
+package cwchoiit.gibungab.adapter.out.oauth;
 
-import cwchoiit.gibungab.application.auth.OAuthClient;
 import cwchoiit.gibungab.application.auth.OAuthUserInfo;
-import cwchoiit.gibungab.infrastructure.common.exception.BusinessException;
-import org.springframework.beans.factory.annotation.Value;
+import cwchoiit.gibungab.application.exception.BusinessException;
+import cwchoiit.gibungab.application.exception.ErrorCode;
+import cwchoiit.gibungab.application.port.out.OAuthPort;
+import cwchoiit.gibungab.infrastructure.properties.GoogleOAuthProperties;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -13,7 +14,7 @@ import org.springframework.web.client.RestClient;
 import java.util.Map;
 
 @Component("googleOAuthClient")
-public class GoogleOAuthClient implements OAuthClient {
+public class GoogleOAuthAdapter implements OAuthPort {
 
     private static final String TOKEN_URI = "https://oauth2.googleapis.com/token";
     private static final String USER_INFO_URI = "https://www.googleapis.com/oauth2/v3/userinfo";
@@ -23,14 +24,10 @@ public class GoogleOAuthClient implements OAuthClient {
     private final String redirectUri;
     private final RestClient restClient;
 
-    public GoogleOAuthClient(
-            @Value("${oauth2.google.client-id}") String clientId,
-            @Value("${oauth2.google.client-secret}") String clientSecret,
-            @Value("${oauth2.google.redirect-uri}") String redirectUri
-    ) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.redirectUri = redirectUri;
+    public GoogleOAuthAdapter(GoogleOAuthProperties properties) {
+        this.clientId = properties.clientId();
+        this.clientSecret = properties.clientSecret();
+        this.redirectUri = properties.redirectUri();
         this.restClient = RestClient.create();
     }
 
@@ -55,7 +52,7 @@ public class GoogleOAuthClient implements OAuthClient {
                 .body(params)
                 .retrieve()
                 .onStatus(status -> status.isError(),
-                        (req, res) -> { throw BusinessException.badRequest("구글 토큰 교환에 실패했습니다."); })
+                        (req, res) -> { throw BusinessException.of(ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED, "구글 토큰 교환에 실패했습니다."); })
                 .body(Map.class);
 
         return (String) response.get("access_token");
@@ -68,7 +65,7 @@ public class GoogleOAuthClient implements OAuthClient {
                 .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .onStatus(status -> status.isError(),
-                        (req, res) -> { throw BusinessException.badRequest("구글 사용자 정보 조회에 실패했습니다."); })
+                        (req, res) -> { throw BusinessException.of(ErrorCode.OAUTH_USER_INFO_FAILED, "구글 사용자 정보 조회에 실패했습니다."); })
                 .body(Map.class);
 
         String socialId = (String) response.get("sub");

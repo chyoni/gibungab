@@ -1,4 +1,4 @@
-package cwchoiit.gibungab.infrastructure.common;
+package cwchoiit.gibungab.adapter.in.web.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;

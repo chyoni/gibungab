@@ -1,8 +1,8 @@
 package cwchoiit.gibungab.adapter.in.web.auth;
 
-import cwchoiit.gibungab.application.auth.AuthService;
+import cwchoiit.gibungab.adapter.in.web.common.ApiResponse;
 import cwchoiit.gibungab.application.auth.TokenPair;
-import cwchoiit.gibungab.infrastructure.common.ApiResponse;
+import cwchoiit.gibungab.application.port.in.AuthUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,33 +16,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthUseCase authUseCase;
 
     @PostMapping("/login/kakao")
     public ResponseEntity<ApiResponse<TokenResponse>> loginWithKakao(
             @Valid @RequestBody SocialLoginRequest request) {
-        TokenPair tokenPair = authService.loginWithKakao(request.authorizationCode());
+        TokenPair tokenPair = authUseCase.loginWithKakao(request.authorizationCode());
         return ResponseEntity.ok(ApiResponse.ok(TokenResponse.from(tokenPair)));
     }
 
     @PostMapping("/login/google")
     public ResponseEntity<ApiResponse<TokenResponse>> loginWithGoogle(
             @Valid @RequestBody SocialLoginRequest request) {
-        TokenPair tokenPair = authService.loginWithGoogle(request.authorizationCode());
+        TokenPair tokenPair = authUseCase.loginWithGoogle(request.authorizationCode());
         return ResponseEntity.ok(ApiResponse.ok(TokenResponse.from(tokenPair)));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(
             @Valid @RequestBody RefreshRequest request) {
-        TokenPair tokenPair = authService.refresh(request.refreshToken());
+        TokenPair tokenPair = authUseCase.refresh(request.refreshToken());
         return ResponseEntity.ok(ApiResponse.ok(TokenResponse.from(tokenPair)));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @Valid @RequestBody RefreshRequest request) {
-        authService.logout(request.refreshToken());
+        authUseCase.logout(request.refreshToken());
         return ResponseEntity.ok(ApiResponse.noContent());
     }
 }

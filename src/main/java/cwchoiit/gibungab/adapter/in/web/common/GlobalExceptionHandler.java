@@ -1,6 +1,7 @@
-package cwchoiit.gibungab.infrastructure.common;
+package cwchoiit.gibungab.adapter.in.web.common;
 
-import cwchoiit.gibungab.infrastructure.common.exception.BusinessException;
+import cwchoiit.gibungab.application.exception.BusinessException;
+import cwchoiit.gibungab.application.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,9 +16,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+        HttpStatus status = mapToHttpStatus(e.getErrorCode());
         return ResponseEntity
-                .status(e.getStatus())
-                .body(ApiResponse.error(e.getStatus().value(), e.getMessage()));
+                .status(status)
+                .body(ApiResponse.error(status.value(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -35,5 +37,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버 오류가 발생했습니다."));
+    }
+
+    private HttpStatus mapToHttpStatus(ErrorCode errorCode) {
+        return switch (errorCode) {
+            case NOT_FOUND, CATEGORY_NOT_FOUND, EXPENSE_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case BAD_REQUEST, INVALID_REFRESH_TOKEN, EXPIRED_REFRESH_TOKEN,
+                 DUPLICATE_CATEGORY, INVALID_CATEGORY,
+                 OAUTH_TOKEN_EXCHANGE_FAILED, OAUTH_USER_INFO_FAILED -> HttpStatus.BAD_REQUEST;
+        };
     }
 }

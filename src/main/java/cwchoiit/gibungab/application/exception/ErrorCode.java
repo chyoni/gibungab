@@ -1,0 +1,17 @@
+package cwchoiit.gibungab.application.exception;
+
+public enum ErrorCode {
+    BAD_REQUEST,
+    INVALID_REFRESH_TOKEN,
+    EXPIRED_REFRESH_TOKEN,
+    DUPLICATE_CATEGORY,
+    INVALID_CATEGORY,
+    OAUTH_TOKEN_EXCHANGE_FAILED,
+    OAUTH_USER_INFO_FAILED,
+
+    FORBIDDEN,
+
+    NOT_FOUND,
+    CATEGORY_NOT_FOUND,
+    EXPENSE_NOT_FOUND
+}

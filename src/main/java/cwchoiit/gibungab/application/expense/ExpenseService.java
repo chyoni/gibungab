@@ -1,13 +1,14 @@
 package cwchoiit.gibungab.application.expense;
 
-import cwchoiit.gibungab.application.port.out.CategoryRepository;
-import cwchoiit.gibungab.application.port.out.ExpenseRepository;
+import cwchoiit.gibungab.application.exception.BusinessException;
+import cwchoiit.gibungab.application.port.in.ExpenseUseCase;
+import cwchoiit.gibungab.application.port.out.CategoryPort;
+import cwchoiit.gibungab.application.port.out.ExpensePort;
+import cwchoiit.gibungab.application.port.out.PageQuery;
+import cwchoiit.gibungab.application.port.out.PageResult;
 import cwchoiit.gibungab.domain.expense.Emotion;
 import cwchoiit.gibungab.domain.expense.Expense;
-import cwchoiit.gibungab.infrastructure.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +18,12 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ExpenseService {
+public class ExpenseService implements ExpenseUseCase {
 
-    private final ExpenseRepository expenseRepository;
-    private final CategoryRepository categoryRepository;
+    private final ExpensePort expensePort;
+    private final CategoryPort categoryPort;
 
+    @Override
     @Transactional
     public Expense create(Long memberId, Long categoryId, BigDecimal amount, String description,
                           String merchant, LocalDate expenseDate,
@@ -29,17 +31,19 @@ public class ExpenseService {
         validateCategory(memberId, categoryId);
         Emotion emotion = Emotion.of(satisfactionScore, emotionMemo);
         Expense expense = Expense.of(memberId, categoryId, amount, description, merchant, expenseDate, emotion);
-        return expenseRepository.save(expense);
+        return expensePort.save(expense);
     }
 
-    public Page<Expense> getExpenses(Long memberId, LocalDate from, LocalDate to,
-                                     Long categoryId, Integer minScore, Integer maxScore,
-                                     Pageable pageable) {
-        return expenseRepository.findByMemberIdAndFilters(memberId, from, to, categoryId, minScore, maxScore, pageable);
+    @Override
+    public PageResult<Expense> getExpenses(Long memberId, LocalDate from, LocalDate to,
+                                            Long categoryId, Integer minScore, Integer maxScore,
+                                            PageQuery pageQuery) {
+        return expensePort.findByMemberIdAndFilters(memberId, from, to, categoryId, minScore, maxScore, pageQuery);
     }
 
+    @Override
     public Expense getExpense(Long memberId, Long expenseId) {
-        Expense expense = expenseRepository.findByIdAndDeletedAtIsNull(expenseId)
+        Expense expense = expensePort.findByIdAndNotDeleted(expenseId)
                 .orElseThrow(() -> BusinessException.notFound("지출 내역을 찾을 수 없습니다."));
 
         if (!expense.isOwnedBy(memberId)) {
@@ -48,6 +52,7 @@ public class ExpenseService {
         return expense;
     }
 
+    @Override
     @Transactional
     public Expense update(Long memberId, Long expenseId, Long categoryId, BigDecimal amount,
                           String description, String merchant, LocalDate expenseDate,
@@ -60,6 +65,7 @@ public class ExpenseService {
         return expense;
     }
 
+    @Override
     @Transactional
     public void delete(Long memberId, Long expenseId) {
         Expense expense = getExpense(memberId, expenseId);
@@ -67,7 +73,7 @@ public class ExpenseService {
     }
 
     private void validateCategory(Long memberId, Long categoryId) {
-        categoryRepository.findByIdAndDeletedAtIsNull(categoryId)
+        categoryPort.findByIdAndNotDeleted(categoryId)
                 .filter(c -> !c.isCustom() || c.isOwnedBy(memberId))
                 .orElseThrow(() -> BusinessException.badRequest("유효하지 않은 카테고리입니다."));
     }

@@ -1,4 +1,4 @@
-package cwchoiit.gibungab.application.port.out;
+package cwchoiit.gibungab.adapter.out.persistence;
 
 import cwchoiit.gibungab.application.stats.CategorySummaryStat;
 import cwchoiit.gibungab.application.stats.EmotionTrend;
@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+public interface ExpenseJpaRepository extends JpaRepository<Expense, Long> {
 
     Optional<Expense> findByIdAndDeletedAtIsNull(Long id);
 

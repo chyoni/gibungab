@@ -1,7 +1,10 @@
 package cwchoiit.gibungab.adapter.in.web.stats;
 
-import cwchoiit.gibungab.application.stats.*;
-import cwchoiit.gibungab.infrastructure.common.ApiResponse;
+import cwchoiit.gibungab.adapter.in.web.common.ApiResponse;
+import cwchoiit.gibungab.application.port.in.StatsUseCase;
+import cwchoiit.gibungab.application.stats.CategorySummaryStat;
+import cwchoiit.gibungab.application.stats.EmotionTrend;
+import cwchoiit.gibungab.application.stats.MonthlySummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +19,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatsController {
 
-    private final StatsService statsService;
+    private final StatsUseCase statsUseCase;
 
     @GetMapping("/monthly")
     public ResponseEntity<ApiResponse<MonthlySummary>> getMonthlySummary(
             @AuthenticationPrincipal Long memberId,
             @RequestParam int year,
             @RequestParam int month) {
-        return ResponseEntity.ok(ApiResponse.ok(statsService.getMonthlySummary(memberId, year, month)));
+        return ResponseEntity.ok(ApiResponse.ok(statsUseCase.getMonthlySummary(memberId, year, month)));
     }
 
     @GetMapping("/emotion-trend")
@@ -31,7 +34,7 @@ public class StatsController {
             @AuthenticationPrincipal Long memberId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return ResponseEntity.ok(ApiResponse.ok(statsService.getEmotionTrend(memberId, from, to)));
+        return ResponseEntity.ok(ApiResponse.ok(statsUseCase.getEmotionTrend(memberId, from, to)));
     }
 
     @GetMapping("/category-summary")
@@ -39,6 +42,6 @@ public class StatsController {
             @AuthenticationPrincipal Long memberId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return ResponseEntity.ok(ApiResponse.ok(statsService.getCategorySummary(memberId, from, to)));
+        return ResponseEntity.ok(ApiResponse.ok(statsUseCase.getCategorySummary(memberId, from, to)));
     }
 }

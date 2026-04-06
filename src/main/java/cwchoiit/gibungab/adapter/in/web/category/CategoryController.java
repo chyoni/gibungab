@@ -1,7 +1,7 @@
 package cwchoiit.gibungab.adapter.in.web.category;
 
-import cwchoiit.gibungab.application.category.CategoryService;
-import cwchoiit.gibungab.infrastructure.common.ApiResponse;
+import cwchoiit.gibungab.adapter.in.web.common.ApiResponse;
+import cwchoiit.gibungab.application.port.in.CategoryUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,12 +16,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final CategoryService categoryService;
+    private final CategoryUseCase categoryUseCase;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories(
             @AuthenticationPrincipal Long memberId) {
-        List<CategoryResponse> categories = categoryService.getAvailableCategories(memberId)
+        List<CategoryResponse> categories = categoryUseCase.getAvailableCategories(memberId)
                 .stream()
                 .map(CategoryResponse::from)
                 .toList();
@@ -33,7 +33,7 @@ public class CategoryController {
             @AuthenticationPrincipal Long memberId,
             @Valid @RequestBody CategoryRequest request) {
         CategoryResponse response = CategoryResponse.from(
-                categoryService.createCustomCategory(memberId, request.name(), request.icon()));
+                categoryUseCase.createCustomCategory(memberId, request.name(), request.icon()));
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(response));
     }
 
@@ -43,7 +43,7 @@ public class CategoryController {
             @PathVariable Long categoryId,
             @Valid @RequestBody CategoryRequest request) {
         CategoryResponse response = CategoryResponse.from(
-                categoryService.updateCategory(memberId, categoryId, request.name(), request.icon()));
+                categoryUseCase.updateCategory(memberId, categoryId, request.name(), request.icon()));
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
@@ -51,7 +51,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long categoryId) {
-        categoryService.deleteCategory(memberId, categoryId);
+        categoryUseCase.deleteCategory(memberId, categoryId);
         return ResponseEntity.ok(ApiResponse.noContent());
     }
 }
