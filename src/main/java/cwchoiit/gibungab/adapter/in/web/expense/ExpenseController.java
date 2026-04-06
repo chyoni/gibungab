@@ -2,10 +2,10 @@ package cwchoiit.gibungab.adapter.in.web.expense;
 
 import cwchoiit.gibungab.adapter.in.web.common.ApiResponse;
 import cwchoiit.gibungab.application.port.in.ExpenseUseCase;
-import cwchoiit.gibungab.application.port.out.PageQuery;
-import cwchoiit.gibungab.application.port.out.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,7 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResult<ExpenseResponse>>> getExpenses(
+    public ResponseEntity<ApiResponse<Page<ExpenseResponse>>> getExpenses(
             @AuthenticationPrincipal Long memberId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
@@ -42,8 +42,8 @@ public class ExpenseController {
             @RequestParam(required = false) Integer maxScore,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        PageResult<ExpenseResponse> expenses = expenseUseCase
-                .getExpenses(memberId, from, to, categoryId, minScore, maxScore, new PageQuery(page, size))
+        Page<ExpenseResponse> expenses = expenseUseCase
+                .getExpenses(memberId, from, to, categoryId, minScore, maxScore, PageRequest.of(page, size))
                 .map(ExpenseResponse::from);
         return ResponseEntity.ok(ApiResponse.ok(expenses));
     }
