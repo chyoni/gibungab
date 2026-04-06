@@ -4,11 +4,11 @@ import cwchoiit.gibungab.application.exception.BusinessException;
 import cwchoiit.gibungab.application.port.in.ExpenseUseCase;
 import cwchoiit.gibungab.application.port.out.CategoryRepository;
 import cwchoiit.gibungab.application.port.out.ExpenseRepository;
-import cwchoiit.gibungab.application.port.out.PageQuery;
-import cwchoiit.gibungab.application.port.out.PageResult;
 import cwchoiit.gibungab.domain.expense.Emotion;
 import cwchoiit.gibungab.domain.expense.Expense;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,10 +35,10 @@ public class ExpenseService implements ExpenseUseCase {
     }
 
     @Override
-    public PageResult<Expense> getExpenses(Long memberId, LocalDate from, LocalDate to,
-                                            Long categoryId, Integer minScore, Integer maxScore,
-                                            PageQuery pageQuery) {
-        return expenseRepository.findByMemberIdAndFilters(memberId, from, to, categoryId, minScore, maxScore, pageQuery);
+    public Page<Expense> getExpenses(Long memberId, LocalDate from, LocalDate to,
+                                      Long categoryId, Integer minScore, Integer maxScore,
+                                      Pageable pageable) {
+        return expenseRepository.findByMemberIdAndFilters(memberId, from, to, categoryId, minScore, maxScore, pageable);
     }
 
     @Override

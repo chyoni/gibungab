@@ -4,6 +4,8 @@ import cwchoiit.gibungab.application.stats.CategorySummaryStat;
 import cwchoiit.gibungab.application.stats.EmotionTrend;
 import cwchoiit.gibungab.application.stats.ExpenseStats;
 import cwchoiit.gibungab.domain.expense.Expense;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,9 +17,9 @@ public interface ExpenseRepository {
 
     Optional<Expense> findByIdAndNotDeleted(Long id);
 
-    PageResult<Expense> findByMemberIdAndFilters(Long memberId, LocalDate from, LocalDate to,
-                                                  Long categoryId, Integer minScore, Integer maxScore,
-                                                  PageQuery pageQuery);
+    Page<Expense> findByMemberIdAndFilters(Long memberId, LocalDate from, LocalDate to,
+                                            Long categoryId, Integer minScore, Integer maxScore,
+                                            Pageable pageable);
 
     List<ExpenseStats> findMonthlyStats(Long memberId, LocalDate from, LocalDate to);
 
