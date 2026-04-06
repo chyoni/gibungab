@@ -1,7 +1,7 @@
 package cwchoiit.gibungab.application.stats;
 
 import cwchoiit.gibungab.application.port.in.StatsUseCase;
-import cwchoiit.gibungab.application.port.out.ExpensePort;
+import cwchoiit.gibungab.application.port.out.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +16,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StatsService implements StatsUseCase {
 
-    private final ExpensePort expensePort;
+    private final ExpenseRepository expenseRepository;
 
     @Override
     public MonthlySummary getMonthlySummary(Long memberId, int year, int month) {
         LocalDate from = LocalDate.of(year, month, 1);
         LocalDate to = from.withDayOfMonth(from.lengthOfMonth());
 
-        List<ExpenseStats> stats = expensePort.findMonthlyStats(memberId, from, to);
+        List<ExpenseStats> stats = expenseRepository.findMonthlyStats(memberId, from, to);
 
         BigDecimal totalAmount = stats.stream()
                 .map(ExpenseStats::totalAmount)
@@ -46,11 +46,11 @@ public class StatsService implements StatsUseCase {
 
     @Override
     public List<EmotionTrend> getEmotionTrend(Long memberId, LocalDate from, LocalDate to) {
-        return expensePort.findMonthlyEmotionTrend(memberId, from, to);
+        return expenseRepository.findMonthlyEmotionTrend(memberId, from, to);
     }
 
     @Override
     public List<CategorySummaryStat> getCategorySummary(Long memberId, LocalDate from, LocalDate to) {
-        return expensePort.findCategorySummary(memberId, from, to);
+        return expenseRepository.findCategorySummary(memberId, from, to);
     }
 }

@@ -5,7 +5,7 @@ import cwchoiit.gibungab.domain.member.SocialProvider;
 
 import java.util.Optional;
 
-public interface MemberPort {
+public interface MemberRepository {
 
     Optional<Member> findBySocialProviderAndSocialId(SocialProvider provider, String socialId);
 

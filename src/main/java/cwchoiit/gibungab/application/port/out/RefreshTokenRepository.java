@@ -4,7 +4,7 @@ import cwchoiit.gibungab.domain.auth.RefreshToken;
 
 import java.util.Optional;
 
-public interface RefreshTokenPort {
+public interface RefreshTokenRepository {
 
     Optional<RefreshToken> findByToken(String token);
 

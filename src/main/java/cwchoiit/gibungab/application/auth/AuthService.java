@@ -3,9 +3,9 @@ package cwchoiit.gibungab.application.auth;
 import cwchoiit.gibungab.application.exception.BusinessException;
 import cwchoiit.gibungab.application.exception.ErrorCode;
 import cwchoiit.gibungab.application.port.in.AuthUseCase;
-import cwchoiit.gibungab.application.port.out.MemberPort;
+import cwchoiit.gibungab.application.port.out.MemberRepository;
 import cwchoiit.gibungab.application.port.out.OAuthPort;
-import cwchoiit.gibungab.application.port.out.RefreshTokenPort;
+import cwchoiit.gibungab.application.port.out.RefreshTokenRepository;
 import cwchoiit.gibungab.application.port.out.TokenProviderPort;
 import cwchoiit.gibungab.domain.auth.RefreshToken;
 import cwchoiit.gibungab.domain.member.Member;
@@ -18,19 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AuthService implements AuthUseCase {
 
-    private final MemberPort memberPort;
-    private final RefreshTokenPort refreshTokenPort;
+    private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final TokenProviderPort tokenProvider;
     private final OAuthPort kakaoOAuthClient;
     private final OAuthPort googleOAuthClient;
 
-    public AuthService(MemberPort memberPort,
-                       RefreshTokenPort refreshTokenPort,
+    public AuthService(MemberRepository memberRepository,
+                       RefreshTokenRepository refreshTokenRepository,
                        TokenProviderPort tokenProvider,
                        @Qualifier("kakaoOAuthClient") OAuthPort kakaoOAuthClient,
                        @Qualifier("googleOAuthClient") OAuthPort googleOAuthClient) {
-        this.memberPort = memberPort;
-        this.refreshTokenPort = refreshTokenPort;
+        this.memberRepository = memberRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.tokenProvider = tokenProvider;
         this.kakaoOAuthClient = kakaoOAuthClient;
         this.googleOAuthClient = googleOAuthClient;
@@ -53,28 +53,28 @@ public class AuthService implements AuthUseCase {
     @Override
     @Transactional
     public TokenPair refresh(String refreshTokenValue) {
-        RefreshToken refreshToken = refreshTokenPort.findByToken(refreshTokenValue)
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> BusinessException.of(ErrorCode.INVALID_REFRESH_TOKEN, "유효하지 않은 Refresh Token입니다."));
 
         if (refreshToken.isExpired()) {
-            refreshTokenPort.delete(refreshToken);
+            refreshTokenRepository.delete(refreshToken);
             throw BusinessException.of(ErrorCode.EXPIRED_REFRESH_TOKEN, "만료된 Refresh Token입니다.");
         }
 
-        refreshTokenPort.delete(refreshToken);
+        refreshTokenRepository.delete(refreshToken);
         return issueTokenPair(refreshToken.getMemberId());
     }
 
     @Override
     @Transactional
     public void logout(String refreshTokenValue) {
-        refreshTokenPort.deleteByToken(refreshTokenValue);
+        refreshTokenRepository.deleteByToken(refreshTokenValue);
     }
 
     private TokenPair processLogin(OAuthUserInfo userInfo, SocialProvider provider) {
-        Member member = memberPort
+        Member member = memberRepository
                 .findBySocialProviderAndSocialId(provider, userInfo.socialId())
-                .orElseGet(() -> memberPort.save(
+                .orElseGet(() -> memberRepository.save(
                         Member.of(userInfo.email(), userInfo.nickname(),
                                 userInfo.profileImageUrl(), provider, userInfo.socialId())
                 ));
@@ -92,7 +92,7 @@ public class AuthService implements AuthUseCase {
 
         RefreshToken refreshToken = RefreshToken.of(memberId, refreshTokenValue,
                 tokenProvider.getRefreshTokenExpiry());
-        refreshTokenPort.save(refreshToken);
+        refreshTokenRepository.save(refreshToken);
 
         return new TokenPair(accessToken, refreshTokenValue);
     }
